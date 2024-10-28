@@ -1,0 +1,365 @@
+* {
+    margin: 0;
+    padding: 0vw;
+}
+
+.backend_strucute_left {
+    width: 20svw;
+    height: 100dvh;
+    background-color: #0a1d26;
+    float: left;
+    position: fixed;
+}
+
+.backend_strucute_left .profile_display {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: max-content;
+    display: flex;
+    padding: 1vw;
+}
+
+.backend_strucute_left .profile_display .image {
+    width: auto;
+    height: 100%;
+    float: left;
+}
+
+.backend_strucute_left .profile_display .image img {
+    width: 100%;
+    border-radius: 90000vw;
+}
+
+.backend_strucute_left .profile_display .text {
+    float: right;
+    align-items: center;
+    display: flex;
+    margin-left: 1vw;
+    width: 100%;
+}
+
+.backend_strucute_left .profile_display .text h1 {
+    color: #f5f5f5;
+    font-size: 2vw;
+}
+
+.backend_strucute_left .page_navigation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: fit-content;
+    height: 50vh;
+    width: 95%;
+    text-align: center;
+    display: block;
+    overflow: auto;
+}
+
+.backend_strucute_left .page_navigation.basic_look {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: fit-content;
+    height: max-content;
+    width: 95%;
+    text-align: center;
+    display: block;
+    overflow: auto;
+}
+
+.backend_strucute_left .page_navigation ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.backend_strucute_left .page_navigation a {
+    text-decoration: none;
+    font-size: 2vw;
+    font-weight: bold;
+    transition: 0.2s color;
+}
+
+.nav_button {
+    color: #a0b0b9 !important;
+}
+
+.nav_button:hover {
+    color: #f5f5f5 !important;
+}
+
+.nav_button.active {
+    color: #f5f5f5 !important;
+}
+
+.backend_strucute_left .page_navigation .drop_down_button{
+    background-color: unset;
+    border:  unset;
+    font-size: 2vw;
+    font-weight: bold;
+    padding: unset;
+    margin-bottom: -7vh;
+}
+
+.backend_strucute_left .page_navigation .drop_down_button .icon{
+    position: relative;
+    left: 105%;
+    transform: translate(0%, -100%);
+    padding: 0;
+    margin: 0;
+    transition: 0.3s;
+    width: 5vw;
+}
+
+.backend_strucute_left .page_navigation .drop_down_button .icon i::before {
+    font-size: 1.5vw;
+    margin-bottom: 12%;
+    transition: 0.2s all ease-in-out;
+}
+
+.backend_strucute_left .page_navigation .drop_down_button .icon i.rotate::before {
+    transform: rotate(180deg);
+}
+
+.backend_strucute_left .page_navigation .list-group-item {
+    background-color: transparent;
+    border-width: 0.15vw;
+    border-radius: 0.3vw;
+    border-color: transparent;
+    width: max-content;
+    left: 50%;
+    transform: translate(-50%);
+    padding: 0;
+    padding-left: 3vh;
+    padding-right: 3vh;
+    margin-bottom: 1vh;
+    transition: 0.2s all ease-in;
+}
+
+/* Border color for when hovering */
+/* .backend_strucute_left .page_navigation .list-group-item:hover {
+    border: 0.15vw #d4af37 solid;
+    background-color: #d4af37;
+} */
+
+.backend_strucute_left .page_navigation .list-group-item:hover a {
+    color: #f5f5f5;
+}
+
+.backend_strucute_left .page_navigation .list-group-item a {
+    text-transform: capitalize;
+    color: #a0b0b9;
+    font-size: 1.5vw;
+}
+
+
+.backend_strucute_left .last_buttons {
+    position: absolute;
+    top: 95%;
+    left: 50%;
+    transform: translate(-50%, -95%);
+    width: 50%;
+    padding: 0;
+    width: 90%;
+}
+
+.backend_strucute_left .last_buttons .settings button {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    width: 100%;
+    width: 70%;
+    font-weight: bold;
+    margin-bottom: 2vh;
+    border-color: #B0BEC5;
+}
+
+.backend_strucute_left .last_buttons .settings button span {
+    color: #87CEEB;
+    margin-right: 1.5vw;
+}
+
+.backend_strucute_left .last_buttons .settings i {
+    margin-right: 0.5vw;
+    color: #ADD8E6;
+    font-size: 1vw;
+}
+
+.backend_strucute_left .last_buttons .logout form{
+    width: 100%;
+}
+
+.backend_strucute_left .last_buttons .logout button {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    width: 100%;
+    width: 70%;
+    font-weight: bold;
+}
+
+.backend_strucute_left .last_buttons .logout button:first-child {
+    margin-bottom: 1vw;
+    font-weight: bold;
+}
+
+.line_break {
+    width: 100%;
+    height: 0.3vh;
+    background-color: rgb(245, 245, 245, 0.3);
+    margin-top: 3vh;
+    margin-bottom: 3vh;
+    border-radius: 2000vh;
+}
+
+.backend_strucute_right {
+    width: 80svw;
+    min-height: 100svh;
+    background-color: white;
+    float: right;
+}
+
+
+.update_loading {
+    position: fixed;
+    left: 0%;
+    width: 100%;
+    margin: 0;
+    background-color: #1d1d1d;
+    opacity: 0.9;
+    z-index: 99;
+    margin-top: -3dvw;
+    height: 110%;
+    display: none;
+}
+
+.update_loading.show {
+    display: block;
+}
+
+.update_loading .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.update_loading .spinner h1 {
+    font-size: 1vw;
+    margin-top: 3vw;
+    color: #f5f5f5;
+}
+
+.update_loading .spinner-border {
+    --bs-spinner-width: 5vw;
+    --bs-spinner-height:5vw;
+    --bs-spinner-vertical-align: -0.125em;
+    --bs-spinner-border-width: 0.5vw;
+    --bs-spinner-animation-speed: 0.75s;
+    --bs-spinner-animation-name: spinner-border;
+    border: var(--bs-spinner-border-width) solid #f5f5f5;
+    border-right-color: #F44336;
+}
+
+.desktop_backend .login_form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 2vw;
+    border: 0.2vw solid black;
+    border-radius: 1vw;
+}
+
+.desktop_backend .login_form h1 {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, -0%);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 7vh;
+}
+
+.desktop_backend .login_form .error_message {
+    left: 50%;
+    margin-top: 2vh;
+    text-align: center;
+    font-weight: bold;
+    color: red;
+    margin-bottom: -5vh;
+}
+
+.desktop_backend .login_form .feild .show_password {
+    top: 50%;
+    right: 1.5vw;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.5vw;
+    color: #BBB;
+}
+
+.desktop_backend .login_form button {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, -0%);
+    width: 50%;
+    margin-top: 7vh;
+}
+
+.success .toast-header .modal_success_text {
+    color: #4CAF50;
+}
+
+.no_edits .toast-header .modal_success_text {
+    color: #FF9800;
+}
+
+.error .toast-header .modal_success_text {
+    color: #F44336;
+}
+
+/* Desktop */
+@media only screen and (min-width: 64rem) {
+    .mobile_backend {
+        display: none;
+    }
+}
+
+/* Mobile */
+@media only screen and (max-width: 63.9375rem) {
+    .desktop_backend {
+        display: none;
+    }
+
+    .mobile_backend {
+        width: 100%;
+        height: 100dvh;
+    }
+
+    .mobile_backend h1 {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        text-align: center;
+        word-spacing: 1vw;
+        letter-spacing: 0.1vw;
+    }
+
+    .back_home {
+        position: absolute;
+        top: 95%;
+        left: 50%;
+        transform: translate(-50%, -95%);
+        font-size: 9vw;
+    }
+
+    .back_home a {
+        text-decoration: none;
+        color: #BBB;
+    }
+}

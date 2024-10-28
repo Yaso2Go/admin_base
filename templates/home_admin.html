@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+
+{% block website_head %}
+{% load static %} <!-- Load static files such as CSS, JS, images -->
+{% load widget_tweaks %} <!-- Load widget tweaks for customizing form widgets -->
+{% load component_tags %}
+
+
+{% component_css_dependencies %}
+{% endblock website_head %}
+
+{% block website_body %}
+
+
+
+{% endblock website_body %}
+
+{% block additional_dom_scripts %}
+
+{% component_js_dependencies %}
+{% endblock additional_dom_scripts %}

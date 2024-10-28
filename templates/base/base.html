@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}  <!-- Load static files like CSS, JS, images -->
+    {% load widget_tweaks %}  <!-- Load widget tweaks for customizing form widgets -->
+    {% load admin_custom_tags %}
+
+    <!-- Favicon -->
+    {% favicon_exist "static/admin_base/img/"|stringformat:"s"|add:"favicon.png" as favicon %}
+    {% if favicon %}
+    <link rel="icon" type="image/x-icon" href="{% static 'admin_base/img/favicon.png' %}">
+    {% else %}
+    <link rel="icon" type="image/x-icon" href="{% static 'admin_base/img/deafult_favicon.png' %}">
+    {% endif %}
+
+    <!-- Common CSS & JavaScript -->
+    <link rel="stylesheet" href="{% static 'admin_base/css/style.css' %}">  <!-- Main stylesheet -->
+
+    <!-- Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">  <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">  <!-- Bootstrap Icons -->
+
+    <!-- Page Head Settings -->
+    {% block website_head %}
+    {% endblock website_head %}
+    <!-- Block for additional head content -->
+</head>
+
+<body>
+
+    <div class="desktop_backend">
+        {% if user.is_authenticated %}
+        <!-- If the user is authenticated, show the backend structure -->
+
+        <div class="backend_strucute_left">
+            <!-- Left sidebar for backend -->
+            <div class="profile_display">
+                <!-- User profile display -->
+
+                {% with file_path="static/admin_base/img/"|stringformat:"s"|add:user.get_username|stringformat:"s"|add:"_pfp.jpg" %}
+                    {% pfp_exist file_path as pfp %}
+
+                    <div class="image">
+                        {% if pfp %}
+                        <img src="{% static 'admin_base/img/' %}{{user.get_username|stringformat:'s'|add:'_pfp.jpg'}}">
+                        {% else %}
+                        <img src="{% static 'admin_base/img/default_pfp.png' %}">
+                        {% endif %}
+                    </div>
+
+                {% endwith %}
+
+                <div class="text">
+                    <h1>Welcome back, {{user.get_username|title}}</h1>  <!-- Greeting message -->
+                </div>
+            </div>
+
+            {% if "seo" in apps %}
+            
+            <!-- <div class="page_navigation">
+                <ul>
+
+                    <li><a href="/admin/" id="homeButton" class="nav_button">Home</a></li>
+                    {% if "cms" in apps %}
+                        
+                    <div class="mb-3">
+
+                        <button class="btn btn-primary drop_down_button nav_button" type="button" data-bs-toggle="collapse" data-bs-target="#cmsCollapse" aria-expanded="false" aria-controls="cmsCollapse" id="content_toggle_button">
+                            Content <div class="icon"><i class="bi bi-chevron-up" id="toggleFieldIconCollapse"></i></div>
+                        </button>
+
+                        <div class="collapse" id="cmsCollapse">
+                            <ul class="list-group">
+                                {% for page in cms.cms_files %}
+                                    <li class="list-group-item">
+                                        <a href="/admin/content/{{ page }}" class="content-item">{{ page }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                    </div>
+
+                    {% endif %}
+                </ul>
+            </div> -->
+
+            <div class="page_navigation basic_look">
+                <!-- Navigation links -->
+                <ul>
+                    {% if "cms" in apps %}
+
+                        {% for page in cms.cms_files %}
+                            <li class="list-group-item">
+                                <a href="/admin/{{ page }}" class="content-item">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="last_buttons">
+
+                <div class="settings">
+                    <a href="/admin/seo/">
+                        <button class="btn"><i class="bi bi-globe"></i><span>SEO</span></button>
+                    </a>
+                </div>
+
+                <div class="logout">
+                    <!-- Logout form -->
+                    <form action="{% url 'admin_base:logout' %}" method="post">
+                        {% csrf_token %}  <!-- CSRF token for security -->
+                        <button type="submit" class="btn btn-outline-danger">Log Out</button>
+                    </form>
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="page_navigation basic_look">
+                <!-- Navigation links -->
+                <ul>
+                    {% if "cms" in apps %}
+
+                        {% for page in cms.cms_files %}
+                            <li class="list-group-item">
+                                <a href="/admin/{{ page }}" class="content-item">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="last_buttons">
+
+                <div class="logout">
+                    <!-- Logout form -->
+                    <form action="{% url 'admin_base:logout' %}" method="post">
+                        {% csrf_token %}  <!-- CSRF token for security -->
+                        <button type="submit" class="btn btn-outline-danger">Log Out</button>
+                    </form>
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <div class="backend_strucute_right">
+            
+            <div class="update_loading" id="loading_screen" style="z-index:99999;">
+                <div class="spinner">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-info" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h1>Saving your updates, hang tight...</h1>
+                </div>
+            </div>
+    
+            <!-- Main content area for the backend -->
+            {% block website_body %}
+            {% endblock website_body %}
+            <!-- Block for additional body content -->
+
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div class="toast" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <strong class="me-auto modal_success_text" id="toast_header_text">Edit Successful</strong>
+                        <small id="toast_time">Just Now</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" id="toast_body">
+                        Your changes have been saved successfully!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- If the user is not authenticated, show the login form -->
+        <div class="login_form">
+            <h1>Login to access your backend</h1>
+            <form method="post">
+                {% csrf_token %}  <!-- CSRF token for security -->
+
+                <div class="feild">
+                    <!-- Username field -->
+                    <div class="form-floating mb-3">
+                        {% render_field form.username class="form-control" id="floatingInput" placeholder="UserName" type="text" autocomplete="off"%}
+                        <label for="floatingInput">Username</label>
+                    </div>
+                </div>
+
+                <div class="feild">
+                    <!-- Password field -->
+                    <div class="form-floating mb-3">
+                        {% render_field form.password class="form-control" id="password_floatingInput" placeholder="Password" type="password" %}
+                        <i class="bi bi-eye-slash position-absolute show_password" id="togglePassword_icon"></i>  <!-- Icon to toggle password visibility -->
+                        <label for="floatingInput">Password</label>
+                    </div>
+                </div>
+
+                {% if form.errors %}
+                <!-- Display error message if login fails -->
+                <div class="error_message">
+                    <p>Incorrect Username or Password</p>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-outline-danger">Log In</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mobile_backend">
+        <!-- Message for users accessing from mobile devices -->
+        <h1>To ensure the best experience and functionality, please access the backend of the website from a computer.</h1>
+
+        <div class="back_home">
+            <!-- Link to return to the homepage -->
+            <a href="/"><i class="fa fa-solid fa-arrow-left arrow"></i>Home</a>
+        </div>
+    </div>
+
+    <!-- DOM Scripts -->
+    <script src="{% static 'admin_base/js/backend.js' %}"></script>  <!-- Common JavaScript -->
+
+    <!-- Libraries Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script> <!-- Bootstrap JavaScript -->
+    
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+    <!-- Popper.js -->
+
+    {% block additional_dom_scripts %}
+
+    {% endblock additional_dom_scripts %}
+</body>
+
+</html>
