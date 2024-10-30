@@ -1,0 +1,20 @@
+# File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
+# Created by https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,python
+# Edit at https://www.toptal.com/developers/gitignore?templates=windows,visualstudiocode,python
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+# File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
+# Created by https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,python
+# Edit at https://www.toptal.com/developers/gitignore?templates=windows,visualstudiocode,python
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# *.log
+# cms_content.sqlite3
+# db.sqlite3
+# website/
