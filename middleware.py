@@ -1,6 +1,10 @@
 import sqlite3
 from django.core.cache import cache
 from django.utils.deprecation import MiddlewareMixin
+from django.http import HttpResponsePermanentRedirect
+from django.conf import settings
+from urllib.parse import urljoin
+from django.urls import resolve
 
 import logging
 
@@ -36,6 +40,9 @@ class CacheUpdateMiddleware(MiddlewareMixin):
         if cache_status == True:
             cache.clear()
             cache.set(key, value)
+            
+        else:
+            pass
 
         response = self.get_response(request)    
             
@@ -72,4 +79,19 @@ class CacheUpdateMiddleware(MiddlewareMixin):
         else:
             print("No Cache Reset")
             return False, '', ''
-        
+    
+class TrailingSlashMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        print(f"Processing request: {request.path}")
+        # Check if the path does not end with a slash and is not a file
+        if not request.path.endswith('/') and not request.path.endswith(('.css', '.js', '.jpg', '.jpeg', '.png', '.gif', '.ico')):
+            print(f"Trying")
+            try:
+                # Redirect to the same URL with a trailing slash
+                print(f"Redirect: {request.path + '/'}")
+                return HttpResponsePermanentRedirect(request.path + '/')
+            except Exception:
+                # If the URL does not resolve to a view, let the request proceed
+                pass
+        return None
+
