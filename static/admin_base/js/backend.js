@@ -88,6 +88,16 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+// Reload page in case language is changed
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.cookie.includes('X-Reload=true')) {
+        document.cookie = "X-Reload=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        location.reload();
+    }
+});
+
+
+
 
 
 

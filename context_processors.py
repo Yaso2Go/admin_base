@@ -1,6 +1,8 @@
 from django.conf import settings
 import re
 import os
+from django.utils.translation import get_language
+from .functions import filter_list_by_language
 
 def check_apps():
     
@@ -39,8 +41,11 @@ def cms_context_procces():
             # Extract the name part from the filename
             cms_files.append(match.group('name'))
 
-    # Return the list of names as part of the context
-    return {'cms_files': cms_files}
+    # Example usage:
+    language = get_language()
+    filtered_cms_files = filter_list_by_language(cms_files, language)
+            
+    return {'cms_files': filtered_cms_files}
 
 def base_context(request):
     return {

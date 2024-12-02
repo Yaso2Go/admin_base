@@ -1,6 +1,11 @@
 import logging
 import time
 import sqlite3
+import time
+from PIL import Image
+import os
+from django.core.cache import cache
+from django.conf import settings
 
 logger = logging.getLogger("debug_logger")
 
@@ -8,6 +13,15 @@ def log(message):
     time_now = time.strftime('%H:%M:%S')
     date = time.strftime('%Y-%m-%d')
     return logger.info(f"[{date} / {time_now}] {message}")
+
+def update_content_cache_index():    
+    general_db = 'admin_base/general.db'
+    
+    initial = database.read(general_db, "update_index", "content_update_index")
+    new = int(initial[0][0]) + 1
+    database.update(general_db, "update_index", "content_update_index", new)
+
+    return initial
 
 class database():
     """
@@ -147,3 +161,138 @@ class database():
                 conn.close()
             except:
                 log("Failed to close the database connection.")
+                
+import os
+import re
+from pathlib import Path
+        
+def clean_old_hashed_images(image_name, static_root):
+    # Get base image name without extension
+    base_name = Path(image_name).stem
+    
+    # Define the pattern to match hashed versions of the image
+    pattern = re.compile(rf"{base_name}\.[\w\d]+\.v\d+\.\w+")
+    
+    # Find all matching hashed versions in the static files directory
+    for file_path in Path(static_root).rglob(f"{base_name}.*"):
+        if pattern.match(file_path.name):
+            os.remove(file_path)              
+             
+def update_image(image_path, db_path, uploaded_image, field_name, db_table_attr):
+    """
+    Handles saving and compressing uploaded images.
+    Compresses images if they are not PNG; otherwise, saves as-is.
+    Checks for existing files with the same name but different formats and deletes them if found.
+    Saves the image in the format corresponding to the original image type.
+    """
+    try:
+        # Open the uploaded image
+        image = Image.open(uploaded_image)
+        image_format = image.format.lower()
+
+        # Define the base save path without format
+        base_save_path = os.path.join(image_path, field_name)
+        
+        existing_png_path = f"{base_save_path}.png"
+        existing_jpg_path = f"{base_save_path}.jpg"
+
+        # Handle JPG & JPEG images
+        if image_format == "jpg" or "jpeg":
+
+            if os.path.exists(existing_png_path):
+                os.remove(existing_png_path)  # Remove the existing PNG if it exists
+                log(f"Deleted existing PNG file: {existing_png_path}")
+
+            if os.path.exists(existing_jpg_path):
+                os.remove(existing_jpg_path)  # Remove the existing JPG if it exists
+                log(f"Deleted existing JPG file: {existing_jpg_path}")
+
+            # Save as JPEG
+            save_path = f"{base_save_path}.jpg"
+            image = image.convert("RGB")  # Ensure it has no alpha channel (JPEG doesn't support transparency)
+            image.save(save_path, "JPEG", quality=75, optimize=True)  # Adjust quality as needed
+            log(f"Compressed and saved image {field_name} as JPEG at {save_path}.")
+
+            # Save the database with field_name and '.jpg'
+            database.update(db_path, db_table_attr, field_name, f"{field_name}.jpg", do_log=False)
+
+        # Handle PNG images
+        elif image_format == "png":
+            if os.path.exists(existing_png_path):
+                os.remove(existing_png_path)  # Remove the existing PNG if it exists
+                log(f"Deleted existing PNG file: {existing_png_path}")
+
+            if os.path.exists(existing_jpg_path):
+                os.remove(existing_jpg_path)  # Remove the existing JPG if it exists
+                log(f"Deleted existing JPG file: {existing_jpg_path}")
+
+            # Save as PNG without compression
+            save_path = f"{base_save_path}.png"
+            image.save(save_path, "PNG", optimize=True)
+            log(f"Saved image {field_name} as PNG at {save_path}.")
+
+            # Save the database with field_name and '.png'
+            database.update(db_path, db_table_attr, field_name, f"{field_name}.png", do_log=False)
+
+        # Handle all other types of images
+        else:
+            # For any other format, save it with its original format
+            existing_path = f"{base_save_path}.{image_format}"
+            if os.path.exists(existing_path):
+                os.remove(existing_path)  # Remove the existing file with the same name and different format
+                log(f"Deleted existing file: {existing_path}")
+
+            save_path = f"{base_save_path}.{image_format}"
+            image.save(save_path, image_format.upper())  # Save with the original format
+            log(f"Saved image {field_name} as {image_format.upper()} at {save_path}.")
+
+            # Save the database with field_name and its respective format
+            database.update(db_path, db_table_attr, field_name, f"{field_name}.{image_format}", do_log=False)
+            
+        print("Updated Image")
+        # if settings.DEBUG == False:
+        #     clean_old_hashed_images(field_name, image_path)
+            
+        update_content_cache_index()
+
+    except Exception as e:
+        log(f"Error saving image {field_name}: {e}")
+        
+def filter_list_by_language(names, language_code):
+        # Create a list to hold the filtered names
+        filtered_names = []
+        
+        # Check if the language code is empty or None
+        if language_code != "en":
+            # Iterate through the names list
+            for name in names:
+                # Check if the name ends with the specified language code
+                if name.endswith(f'_{language_code}'):
+                    suffix_len = len(language_code)
+                    filtered_names.append(name[: -suffix_len - 1])
+        else:
+            # If no language code is provided, consider it English
+            for name in names:
+                # Check if the name does not contain a language suffix
+                if '_' not in name:
+                    filtered_names.append(name)
+        
+        return filtered_names
+    
+def filter_string_from_language(names, language_code):
+
+        if language_code != "en":
+            if names.endswith(f'_{language_code}'):
+                suffix_len = len(language_code)
+                filtered = names[: -suffix_len - 1]
+                return filtered
+                
+        else:
+
+            if '_' not in names:
+                filtered = names
+        
+                return filtered
+    
+
+    
