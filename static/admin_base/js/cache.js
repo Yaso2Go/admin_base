@@ -1,39 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Function to reset all caches and clear storage
     function resetAllCaches() {
+        console.log('Resetting all caches...');
+        
         // Clear cached images, CSS & JS files by forcing a reload
         const elements = [...document.getElementsByTagName('img'), ...document.getElementsByTagName('link'), ...document.getElementsByTagName('script')];
 
         elements.forEach((element) => {
             // For resetting image sources
             if (element.tagName === 'IMG') {
-                const oldSrc = element.src;
+                const oldSrc = element.src.split('?')[0]; // Remove any existing query parameters
                 element.src = ''; // Clear the old image
-                element.src = `${oldSrc}?v=${new Date().getTime()}`; // Append a timestamp
+                element.src = `${oldSrc}?v=${new Date().getTime()}`; // Append a single timestamp
             }
-
-            // CSS & JS Cache Busting Diabled For Now
-            // // For resetting CSS files (link elements with rel="stylesheet")
-            // if (element.tagName === 'LINK' && element.rel === 'stylesheet') {
-            //     const oldHref = element.href;
-            //     element.href = ''; // Clear the old stylesheet
-            //     element.href = `${oldHref}?v=${new Date().getTime()}`; // Append a timestamp
-            // }
-
-            // // For resetting JavaScript files (script elements)
-            // if (element.tagName === 'SCRIPT' && element.src) {
-            //     const oldSrc = element.src;
-            //     element.src = ''; // Clear the old script
-            //     element.src = `${oldSrc}?v=${new Date().getTime()}`; // Append a timestamp
-            // }
         });
-
-        // Optionally, reload the page to ensure fresh loading of all assets
-        
-
-        // Clear local storage (DISABLED FOR LIVE TOASTS)
-        // localStorage.clear();
-        // console.log('Local storage cleared.');
 
         // Clear session storage
         sessionStorage.clear();
@@ -70,30 +50,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Only proceed if 'cache_reset=true' is in the URL and we haven't already reloaded
         if (urlParams.has('cache_reset') && urlParams.get('cache_reset') === 'true') {
-            // Set the cache reset flag to prevent repeated reloads
+            console.log('Cache reset parameter found in URL.');
 
             // Clear all cache data
             resetAllCaches();
 
-            // Reload the page to apply the changes and bypass cache
-            setTimeout(function() {
-                if (!localStorage.getItem('cache_reset_done')) {
-                    location.reload(true);
-                }
-            }, 1000); // Short delay to ensure caches are cleared
+            console.log(localStorage.getItem('cache_reset_done'))
 
-            localStorage.setItem('cache_reset_done', 'true');
-
-            // Clean up the URL by removing the 'cache_reset' parameter if cache reset is done
-            cleanUpUrl();
-
-            window.location.reload(true);
+            // Force reload the page to apply the changes and bypass cache
+            if (localStorage.getItem('cache_reset_done') === "false" || localStorage.getItem('cache_reset_done') === null) {
+                localStorage.setItem('cache_reset_done', 'true');
+                console.log('Reloading page to apply cache reset.');
+                window.location.reload(true); // Force reload the page
+            }
         }
     }
 
     // Remove 'cache_reset=true' parameter from the URL after cache reset
     function cleanUpUrl() {
-        if (localStorage.getItem('cache_reset_done')) {
+        if (localStorage.getItem('cache_reset_done') === 'true') {
+            console.log('Cleaning up URL after cache reset.');
             const urlParams = new URLSearchParams(window.location.search);
             urlParams.delete('cache_reset');  // Remove the cache_reset parameter
 
@@ -109,4 +85,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check immediately if the page was loaded with the cache_reset parameter
     checkCacheReset();
 
+    // Clean up the URL after cache reset
+    window.addEventListener('load', cleanUpUrl);
 });
+
+
+
+
+// // For resetting CSS files (link elements with rel="stylesheet")
+// if (element.tagName === 'LINK' && element.rel === 'stylesheet') {
+//     const oldHref = element.href.split('?')[0]; // Remove any existing query parameters
+//     element.href = ''; // Clear the old stylesheet
+//     element.href = `${oldHref}?v=${new Date().getTime()}`; // Append a single timestamp
+// }
+
+// // For resetting JavaScript files (script elements)
+// if (element.tagName === 'SCRIPT' && element.src) {
+//     const oldSrc = element.src.split('?')[0]; // Remove any existing query parameters
+//     element.src = ''; // Clear the old script
+//     element.src = `${oldSrc}?v=${new Date().getTime()}`; // Append a single timestamp
+// }

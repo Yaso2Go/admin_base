@@ -28,21 +28,16 @@ class CacheUpdateMiddleware(MiddlewareMixin):
         print("")
             
         if cache_status:
-            # Clear cache if version mismatch
             call_command("clear_cache")
             cache.set("latest_cache_index", version_value)
             
-            print("RESETED SERVER_SIDE CACHE")
-            
             if 'cache_reset' not in request.GET:
-                print("Cache Reset Not in Header Confirmation")
                 redirect_url = request.get_full_path() + ('&' if '?' in request.get_full_path() else '?') + 'cache_reset=true'
                 return HttpResponseRedirect(redirect_url)
         
         response = self.get_response(request)
         
         if request.GET.get('cache_reset') == 'true':
-            print("Applying Cache Busting Headers")
             patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True, max_age=0)
             
         return response
@@ -112,8 +107,8 @@ class URLLanguageConfigMiddleware:
     def __call__(self, request):
         path = request.path
         
-        if path.startswith("/__reload__/"):
-            return self.get_response(request)
+        # if path.startswith("/__reload__/"):
+        #     return self.get_response(request)
 
         # Check if the path contains a language code
         url_lang_match = re.match(r'^/admin/([a-z]{2})(/.*)?$', path)
@@ -171,6 +166,5 @@ class URLLanguageConfigMiddleware:
                 
             else:   
                 return self.get_response(request)
-
 
 

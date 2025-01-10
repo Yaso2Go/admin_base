@@ -12,6 +12,8 @@
     {% load admin_custom_tags %}
     {% load i18n %}
 
+    <script src="{% static 'admin_base/js/cache.js' %}"></script>
+
     <!-- Favicon -->
     {% favicon_exist "static/admin_base/img/"|stringformat:"s"|add:"favicon.png" as favicon %}
     {% if favicon %}
@@ -33,6 +35,8 @@
     {% if request.LANGUAGE_CODE == "ar" %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css"
         integrity="sha384-dpuaG1suU0eT09tx5plTaGMLBsfDLzUCCUXOY2j/LSvXYuG6Bqs43ALlhIqAJVRb" crossorigin="anonymous"> <!-- Bootstrap CSS (RTL support) -->
+        
+    <link rel="stylesheet" href="{% static 'admin_base/css/rtl_support.css' %}">
     {% endif %}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">  <!-- Bootstrap Icons -->
@@ -50,10 +54,11 @@
         <!-- If the user is authenticated, show the backend structure -->
 
         {% if request.LANGUAGE_CODE == "ar" or request.LANGUAGE_CODE == "fa" or request.LANGUAGE_CODE == "he" %}
-            <div class="backend_strucute_left rtl">
+            <div class="backend_sidebar rtl">
         {% else %}
-            <div class="backend_strucute_left">
+            <div class="backend_sidebar">
         {% endif %}
+        
             <!-- Left sidebar for backend -->
             <div class="profile_display">
                 <!-- User profile display -->
@@ -72,7 +77,11 @@
                 {% endwith %}
 
                 <div class="text">
-                    <h1>Welcome back, {{user.get_username|title}}</h1>  <!-- Greeting message -->
+                    {% with username=user.get_username|title %}
+                        {% with name="Welcome back, "|add:username %}
+                            <h1>{% message_translated name %}</h1>  <!-- Greeting message -->
+                        {% endwith %}
+                    {% endwith %}
                 </div>
             </div>
             
@@ -105,73 +114,57 @@
             </div> -->
 
             <div class="page_navigation basic_look">
-                <!-- Navigation links -->
-                <ul>
-                    {% if "cms" in apps %}
-
-                        {% for page in cms.cms_files %}
-                            {% if request.LANGUAGE_CODE == "en" %}
-                            <li class="list-group-item">
-                                <a href="/admin/{{ page }}/" class="content-item">{{ page }}</a>
-                            </li>
-                            {% else %}
-
-                            <li class="list-group-item">
-                                <a href="/admin/{{ request.LANGUAGE_CODE }}/{{ page }}/" class="content-item">{{ page }}</a>
-                            </li>
-                            
-                            {% endif %}
-                            
-                        {% endfor %}
-
-                    {% endif %}
-                </ul>
+                
+                {% block navigation_holder %}
+                {% endblock navigation_holder %}
+                
             </div>
 
             {% if "seo" in apps %}
 
-            <div class="last_buttons">
+                <div class="last_buttons">
 
-                <div class="settings">
-                    <a href="/admin/seo/">
-                        <button class="btn"><i class="bi bi-globe"></i><span>{%trans "SEO" %}</span></button>
-                    </a>
+                    <div class="settings">
+                        <a href="/admin/seo/">
+                            <button class="btn"><i class="bi bi-globe"></i><span>{% trans "SEO" %}</span></button>
+                        </a>
+                    </div>
+
+                    <div class="logout">
+                        <!-- Logout form -->
+                        <form action="{% url 'admin_base:logout' %}" method="post">
+                            {% csrf_token %}  <!-- CSRF token for security -->
+                            <button type="submit" class="btn btn-outline-danger">{% trans "Logout" %}</button>
+                        </form>
+                    </div>
+
                 </div>
-
-                <div class="logout">
-                    <!-- Logout form -->
-                    <form action="{% url 'admin_base:logout' %}" method="post">
-                        {% csrf_token %}  <!-- CSRF token for security -->
-                        <button type="submit" class="btn btn-outline-danger">{% trans "Logout" %}</button>
-                    </form>
-                </div>
-
-            </div>
 
             {% else %}
 
-            <div class="last_buttons">
+                <div class="last_buttons">
 
-                <div class="logout">
-                    <!-- Logout form -->
-                    <form action="{% url 'admin_base:logout' %}" method="post">
-                        {% csrf_token %}  <!-- CSRF token for security -->
-                        <button type="submit" class="btn btn-outline-danger">{% trans "Logout" %}</button>
-                    </form>
+                    <div class="logout">
+                        <!-- Logout form -->
+                        <form action="{% url 'admin_base:logout' %}" method="post">
+                            {% csrf_token %}  <!-- CSRF token for security -->
+                            <button type="submit" class="btn btn-outline-danger">{% trans "Logout" %}</button>
+                        </form>
+                    </div>
+
                 </div>
-
-            </div>
 
             {% endif %}
 
         </div>
 
         {% if request.LANGUAGE_CODE == "ar" %}
-            <div class="backend_strucute_right rtl">
+            <div class="backend_main rtl">
         {% else %}
-            <div class="backend_strucute_right">
+            <div class="backend_main">
         {% endif %}
             
+            <!-- Loading screen for updates -->
             <div class="update_loading" id="loading_screen" style="z-index:99999;">
                 <div class="spinner">
                     <div class="d-flex justify-content-center">
@@ -179,7 +172,7 @@
                           <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <h1>Saving your updates, hang tight...</h1>
+                    <h1>{% trans "Saving your updates, hang tight..." %}</h1>
                 </div>
             </div>
     
@@ -188,69 +181,44 @@
             {% endblock website_body %}
             <!-- Block for additional body content -->
 
-            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <!-- Toast -->
+            <div class="toast-container p-3"
+
+            data-no-edits-header="{% trans 'No edits' %}"
+            data-no-edits-body="{% trans 'No changes were detected. Make sure youve updated any content.' %}"
+
+            data-image-uploading-header="{% trans 'Image Uploading' %}"
+            data-image-uploading-body="{% trans 'Please wait for the image upload to complete before submitting.' %}"
+            
+            data-edit-success-header="{% trans 'Edit Successful' %}"
+            data-edit-success-body="{% trans 'Your changes have been saved successfully!' %}"
+            >
                 <div class="toast" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header">
-                        <strong class="me-auto modal_success_text" id="toast_header_text">Edit Successful</strong>
-                        <small id="toast_time">Just Now</small>
+                        <strong class="me-auto modal_success_text" id="toast_header_text">{% trans "Edit Successful" %}</strong>
+                        <small id="toast_time">{% trans "Just Now" %}</small>
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
                     <div class="toast-body" id="toast_body">
-                        Your changes have been saved successfully!
+                        {% trans "Your changes have been saved successfully!" %}
                     </div>
                 </div>
             </div>
             
+            <!-- Language selection button, syncronized with available languages -->
             {% include "base/components/language_selection.html" %}
             
         </div>
 
         {% else %}
         <!-- If the user is not authenticated, show the login form -->
-        <div class="login_form">
-            <h1>Login to access your backend</h1>
-            <form method="post">
-                {% csrf_token %}  <!-- CSRF token for security -->
+        {% include "base/components/login_view.html" %}
 
-                <div class="feild">
-                    <!-- Username field -->
-                    <div class="form-floating mb-3">
-                        {% render_field form.username class="form-control" id="floatingInput" placeholder="UserName" type="text" autocomplete="off"%}
-                        <label for="floatingInput">Username</label>
-                    </div>
-                </div>
-
-                <div class="feild">
-                    <!-- Password field -->
-                    <div class="form-floating mb-3">
-                        {% render_field form.password class="form-control" id="password_floatingInput" placeholder="Password" type="password" %}
-                        <i class="bi bi-eye-slash position-absolute show_password" id="togglePassword_icon"></i>  <!-- Icon to toggle password visibility -->
-                        <label for="floatingInput">Password</label>
-                    </div>
-                </div>
-
-                {% if form.errors %}
-                <!-- Display error message if login fails -->
-                <div class="error_message">
-                    <p>Incorrect Username or Password</p>
-                </div>
-                {% endif %}
-
-                <button type="submit" class="btn btn-outline-danger">Log In</button>
-            </form>
-        </div>
         {% endif %}
     </div>
 
-    <div class="mobile_backend">
-        <!-- Message for users accessing from mobile devices -->
-        <h1>To ensure the best experience and functionality, please access the backend of the website from a computer.</h1>
-
-        <div class="back_home">
-            <!-- Link to return to the homepage -->
-            <a href="/"><i class="fa fa-solid fa-arrow-left arrow"></i>Home</a>
-        </div>
-    </div>
+    <!-- If user is trying to access the backend from mobile show this view -->
+    {% include "base/components/mobile_view.html" %}
 
     <!-- DOM Scripts -->
     <script src="{% static 'admin_base/js/cache.js' %}"></script>

@@ -2,7 +2,7 @@ from django.conf import settings
 import re
 import os
 from django.utils.translation import get_language
-from .functions import filter_list_by_language
+#sfrom .functions import filter_list_by_language
 
 def check_apps():
     
@@ -25,7 +25,7 @@ def cms_context_procces():
         return {'cms_files': cms_files}  # Return an empty list if 'cms' is not installed
 
     # Define the directory where the files are stored
-    cms_content_index_dir = os.path.join(settings.BASE_DIR, 'cms', 'content_index')
+    cms_content_index_dir = os.path.join(settings.BASE_DIR, 'cms', 'content_index', get_language())
 
     # Check if the directory exists
     if not os.path.exists(cms_content_index_dir):
@@ -40,15 +40,12 @@ def cms_context_procces():
         if match:
             # Extract the name part from the filename
             cms_files.append(match.group('name'))
-
-    # Example usage:
-    language = get_language()
-    filtered_cms_files = filter_list_by_language(cms_files, language)
             
-    return {'cms_files': filtered_cms_files}
+    return {'cms_files': cms_files}
 
 def base_context(request):
     return {
         "apps": check_apps(),
-        "cms": cms_context_procces()
+        "cms": cms_context_procces(),
+        "defualt_language": settings.LANGUAGE_CODE
     }

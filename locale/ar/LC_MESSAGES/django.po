@@ -1,0 +1,66 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-10 18:34+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+#: .\admin_base\templates\base\base.html:129
+msgid "SEO"
+msgstr "تحسين محركات البحث"
+
+#: .\admin_base\templates\base\base.html:137
+#: .\admin_base\templates\base\base.html:151
+msgid "Logout"
+msgstr "تسجيل الخروج"
+
+#: .\admin_base\templates\base\base.html:175
+msgid "Saving your updates, hang tight..."
+msgstr "جاري حفظ تحديثاتك، انتظر قليلاً..."
+
+#: .\admin_base\templates\base\base.html:187
+msgid "No edits"
+msgstr "لا تعديلات"
+
+#: .\admin_base\templates\base\base.html:188
+msgid "No changes were detected. Make sure youve updated any content."
+msgstr "لم يتم اكتشاف أي تغييرات. تأكد من تحديث أي محتوى."
+
+#: .\admin_base\templates\base\base.html:190
+msgid "Image Uploading"
+msgstr "تحميل الصور"
+
+#: .\admin_base\templates\base\base.html:191
+msgid "Please wait for the image upload to complete before submitting."
+msgstr "يرجى الانتظار حتى اكتمال تحميل الصورة قبل الإرسال."
+
+#: .\admin_base\templates\base\base.html:193
+#: .\admin_base\templates\base\base.html:198
+msgid "Edit Successful"
+msgstr "تم التعديل بنجاح"
+
+#: .\admin_base\templates\base\base.html:194
+#: .\admin_base\templates\base\base.html:203
+msgid "Your changes have been saved successfully!"
+msgstr "لقد تم حفظ التغييرات الخاصة بك بنجاح!"
+
+#: .\admin_base\templates\base\base.html:199
+msgid "Just Now"
+msgstr "الآن"
+
+#: .\admin_base\templates\base\base.html:79
+msgid "Welcome back, Yassin"
+msgstr "مرحباً بك مرة أخرى، ياسين"

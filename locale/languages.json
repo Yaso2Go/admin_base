@@ -1,0 +1,101 @@
+{
+    "languages": {
+      "en": {
+        "name": "English",
+        "english_name": "English",
+        "direction": "ltr",
+        "flag_code": "fi fi-us"
+      },
+      "ar": {
+        "name": "العربية",
+        "english_name": "Arabic",
+        "direction": "rtl",
+        "flag_code": "fi fi-sa"
+      },
+      "fr": {
+        "name": "Français",
+        "english_name": "French",
+        "direction": "ltr",
+        "flag_code": "fi fi-fr"
+      },
+      "es": {
+        "name": "Español",
+        "english_name": "Spanish",
+        "direction": "ltr",
+        "flag_code": "fi fi-es"
+      },
+      "zh": {
+        "name": "中文",
+        "english_name": "Chinese",
+        "direction": "ltr",
+        "flag_code": "fi fi-cn"
+      },
+      "de": {
+        "name": "Deutsch",
+        "english_name": "German",
+        "direction": "ltr",
+        "flag_code": "fi fi-de"
+      },
+      "ru": {
+        "name": "Русский",
+        "english_name": "Russian",
+        "direction": "ltr",
+        "flag_code": "fi fi-ru"
+      },
+      "ja": {
+        "name": "日本語",
+        "english_name": "Japanese",
+        "direction": "ltr",
+        "flag_code": "fi fi-jp"
+      },
+      "it": {
+        "name": "Italiano",
+        "english_name": "Italian",
+        "direction": "ltr",
+        "flag_code": "fi fi-it"
+      },
+      "hi": {
+        "name": "हिन्दी",
+        "english_name": "Hindi",
+        "direction": "ltr",
+        "flag_code": "fi fi-in"
+      },
+      "pt": {
+        "name": "Português",
+        "english_name": "Portuguese",
+        "direction": "ltr",
+        "flag_code": "fi fi-pt"
+      },
+      "ko": {
+        "name": "한국어",
+        "english_name": "Korean",
+        "direction": "ltr",
+        "flag_code": "fi fi-kr"
+      },
+      "tr": {
+        "name": "Türkçe",
+        "english_name": "Turkish",
+        "direction": "ltr",
+        "flag_code": "fi fi-tr"
+      },
+      "fa": {
+        "name": "فارسی",
+        "english_name": "Persian",
+        "direction": "rtl",
+        "flag_code": "fi fi-ir"
+      },
+      "he": {
+        "name": "עברית",
+        "english_name": "Hebrew",
+        "direction": "rtl",
+        "flag_code": "fi fi-il"
+      },
+      "th": {
+        "name": "ไทย",
+        "english_name": "Thai",
+        "direction": "ltr",
+        "flag_code": "fi fi-th"
+      }
+    }
+  }
+  

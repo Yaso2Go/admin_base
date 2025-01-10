@@ -1,0 +1,33 @@
+{% load widget_tweaks %}
+<div class="login_form">
+    <h1>Login to access your backend</h1>
+    <form method="post">
+        {% csrf_token %}  <!-- CSRF token for security -->
+
+        <div class="feild">
+            <!-- Username field -->
+            <div class="form-floating mb-3">
+                {% render_field form.username class="form-control" id="floatingInput" placeholder="UserName" type="text" autocomplete="off"%}
+                <label for="floatingInput">Username</label>
+            </div>
+        </div>
+
+        <div class="feild">
+            <!-- Password field -->
+            <div class="form-floating mb-3">
+                {% render_field form.password class="form-control" id="password_floatingInput" placeholder="Password" type="password" %}
+                <i class="bi bi-eye-slash position-absolute show_password" id="togglePassword_icon"></i>  <!-- Icon to toggle password visibility -->
+                <label for="floatingInput">Password</label>
+            </div>
+        </div>
+
+        {% if form.errors %}
+        <!-- Display error message if login fails -->
+        <div class="error_message">
+            <p>Incorrect Username or Password</p>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-outline-danger">Log In</button>
+    </form>
+</div>

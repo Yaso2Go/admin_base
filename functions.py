@@ -6,6 +6,13 @@ from PIL import Image
 import os
 from django.core.cache import cache
 from django.conf import settings
+import os
+import re
+from pathlib import Path
+from termcolor import colored
+import sys
+import traceback
+import threading
 
 logger = logging.getLogger("debug_logger")
 
@@ -13,6 +20,78 @@ def log(message):
     time_now = time.strftime('%H:%M:%S')
     date = time.strftime('%Y-%m-%d')
     return logger.info(f"[{date} / {time_now}] {message}")
+
+def traceback_error(detailed=False):
+    # Get the traceback object
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    
+    if exc_type is not None:
+        # Get the traceback information
+        formatted_tb = traceback.format_exception_only(exc_type, exc_value)
+        
+        # Extract the file name, line number, and error message
+        filename = exc_tb.tb_frame.f_code.co_filename
+        line_number = exc_tb.tb_lineno
+        error_message = str(exc_value)
+        
+        # Format the output with static parts colored red
+        formatted_message = (
+            colored("Error in ", 'light_red') + filename +
+            colored(f", line {line_number}: ", 'light_red') + error_message
+        )
+        
+        # Print the formatted short error
+        print(formatted_message)
+        
+        # If 'detailed' is True, print the full traceback
+        if detailed:
+            # Get the full traceback details
+            full_traceback = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
+            # Print the detailed traceback in red
+            print(colored(full_traceback, 'light_red'))
+        else:
+            # Optionally, print an additional message or leave it out
+            print('For more details, use the detailed flag.')
+        
+class SpinnerWithMessage:
+    spinner_cycle = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+    def __init__(self, message):
+        self.message = message
+        self.stop_running = threading.Event()
+        self.spinner_thread = threading.Thread(target=self.init_spinner)
+        self.message_lock = threading.Lock()
+
+    def start(self):
+        self.spinner_thread.start()
+
+    def stop(self, message, status='success'):
+        self.stop_running.set()
+        self.spinner_thread.join()
+        print('\r' + ' ' * (len(self.message) + 2 + len(self.spinner_cycle[0])), end='\r')
+        if status == "success":
+            print(colored('✔ ', 'green', attrs=['bold']) + message)
+        elif status == 'error':
+            print(colored('✘ ', 'red', attrs=['bold']) + message)
+        else:
+            print("There has been an error. Most likely with \"par: status\"")
+
+    def update(self, new_message):
+        with self.message_lock:
+            print('\r' + ' ' * (len(self.message) + 2 + len(self.spinner_cycle[0])), end='\r')
+            self.message = new_message
+
+    def init_spinner(self):
+        while not self.stop_running.is_set():
+            for symbol in self.spinner_cycle:
+                
+                symbol = colored(symbol, 'yellow')
+                
+                with self.message_lock:
+                    print(f'\r{symbol} {self.message}', end='', flush=True)
+                time.sleep(0.1)
+                if self.stop_running.is_set():
+                    break            
 
 def update_content_cache_index():    
     general_db = 'admin_base/general.db'
@@ -161,10 +240,6 @@ class database():
                 conn.close()
             except:
                 log("Failed to close the database connection.")
-                
-import os
-import re
-from pathlib import Path
         
 def clean_old_hashed_images(image_name, static_root):
     # Get base image name without extension
@@ -257,27 +332,6 @@ def update_image(image_path, db_path, uploaded_image, field_name, db_table_attr)
 
     except Exception as e:
         log(f"Error saving image {field_name}: {e}")
-        
-def filter_list_by_language(names, language_code):
-        # Create a list to hold the filtered names
-        filtered_names = []
-        
-        # Check if the language code is empty or None
-        if language_code != "en":
-            # Iterate through the names list
-            for name in names:
-                # Check if the name ends with the specified language code
-                if name.endswith(f'_{language_code}'):
-                    suffix_len = len(language_code)
-                    filtered_names.append(name[: -suffix_len - 1])
-        else:
-            # If no language code is provided, consider it English
-            for name in names:
-                # Check if the name does not contain a language suffix
-                if '_' not in name:
-                    filtered_names.append(name)
-        
-        return filtered_names
     
 def filter_string_from_language(names, language_code):
 
@@ -293,6 +347,3 @@ def filter_string_from_language(names, language_code):
                 filtered = names
         
                 return filtered
-    
-
-    
