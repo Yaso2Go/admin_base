@@ -3,6 +3,8 @@ import time
 from langdetect import detect, DetectorFactory
 from langdetect.lang_detect_exception import LangDetectException
 from deep_translator import GoogleTranslator
+import logging
+import os
 
 # Reletive importing for local running
 try:
@@ -13,7 +15,26 @@ try:
 except:
     from admin_base.tbot.llms import tbot, tbot_backup, tbot_advanced
     import admin_base.tbot.prompts as prompt
+    from django.conf import settings
+
+def translation_logger():
+    # Define the log file path
     
+    log_file = os.path.join(settings.BASE_DIR, 'log', f"translation_18-1-2025.log")
+    
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    
+    # Set up the logging configuration
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.INFO,  # You can use DEBUG, WARNING, ERROR, etc., as needed
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        filemode='w',  # Open in write mode to overwrite the file each time
+        encoding='utf-8' 
+    )
+
 def translate_text_api(text, dest_language):
     return GoogleTranslator(source='auto', target=dest_language).translate(text)
 
@@ -142,9 +163,8 @@ def str_translation_check(original_translated_text, original_text, language_code
         backup_llm_model = bots[2]
     
     # print("\n\nSTARTING\n\n")
-    # print(f'Original Translated: {original_translated_text}')
+    # print(f'Original Translated: {original_translated_te xt}')
     # print(f'Original Text: {original_text}')
-    
     language = "Arabic"
     
     # Format original input
@@ -269,32 +289,36 @@ def translation_check(original_translated_text, original_text, language_code, bo
     This function refines a translated string repeatedly by passing it through
     the str_translation_check function until the translation meets the criteria (status is True).
     """
-
+    translation_logger()
     # Trigger for advanced bot
     advanced = False
     
     # Initialize the variables
     text = original_translated_text
     trials = 0
+    
+    logging.info(f"Starting translation for string \"{original_text}\"")
 
     while True:  # Infinite loop that will break when the status is True
         # Pass the current text through the str_translation_check function
-        
+        s1 = time.time()
         # Level 1 check
         str_pass, refined_text = str_translation_check(text, original_text, language_code, bots, database_query, advanced)
-        
+        e1 = time.time()
         # Level 2 check
         # If the status is True, return the final refined text
         if str_pass:
+            logging.info(f"Succesfully translated string \"{original_text}\" to \"{refined_text}\" in {round((e1-s1), 2)} seconds")
             return str_pass, refined_text
         
         else:
             # If it reached here while advanced is true that means that the model couldnt give us the best result.
             if advanced == True:
+                logging.info(f"Maximum trials reached. Result is string \"{original_text}\" translated to \"{refined_text}\"")
                 return True, refined_text
             # If status is False, refine the text further
             trials += 1
-            # print(f"Attempt {trials}, Original: {original_text}, Variation: {refined_text}")
+            logging.info(f"Attempt {trials}, Original: {original_text}, Variation: {refined_text} in {round((e1-s1), 2)} seconds")
             
             # Pass in new (refined) text variable
             text = refined_text

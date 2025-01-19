@@ -4,9 +4,6 @@ import sqlite3
 import time
 from PIL import Image
 import os
-from django.core.cache import cache
-from django.conf import settings
-import os
 import re
 from pathlib import Path
 from termcolor import colored
@@ -16,10 +13,11 @@ import threading
 
 logger = logging.getLogger("debug_logger")
 
-def log(message):
+def log(message, show=None):
     time_now = time.strftime('%H:%M:%S')
     date = time.strftime('%Y-%m-%d')
-    return logger.info(f"[{date} / {time_now}] {message}")
+    if show:
+        return logger.info(f"[{date} / {time_now}] {message}")
 
 def traceback_error(detailed=False):
     # Get the traceback object
@@ -202,14 +200,14 @@ class database():
         except Exception as e:
             log(f"Unexpected error: {e}")
         
-    def read_database(db_path, database):
+    def read_database(db_path, table):
         
         try:
             # Connect to the database
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             
-            query = f"SELECT * FROM {database}"
+            query = f"SELECT * FROM {table}"
             logging.debug(f"Executing query: {query}")
             
             cursor.execute(query)
@@ -263,24 +261,26 @@ def update_image(image_path, db_path, uploaded_image, field_name, db_table_attr)
     try:
         # Open the uploaded image
         image = Image.open(uploaded_image)
-        image_format = image.format.lower()
+        image_format = str(image.format.lower())
 
         # Define the base save path without format
         base_save_path = os.path.join(image_path, field_name)
         
-        existing_png_path = f"{base_save_path}.png"
-        existing_jpg_path = f"{base_save_path}.jpg"
+        image_formats = ['jpg', 'jpeg', 'png', 'webp']
+        
+        # Remove any other versions of image
+        for formats in image_formats:
+            initial_image_path = f"{base_save_path}.{formats}"
+            
+            if os.path.exists(initial_image_path):
+                os.remove(initial_image_path)
+        
+        print("Image format: ", image_format)
 
         # Handle JPG & JPEG images
-        if image_format == "jpg" or "jpeg":
-
-            if os.path.exists(existing_png_path):
-                os.remove(existing_png_path)  # Remove the existing PNG if it exists
-                log(f"Deleted existing PNG file: {existing_png_path}")
-
-            if os.path.exists(existing_jpg_path):
-                os.remove(existing_jpg_path)  # Remove the existing JPG if it exists
-                log(f"Deleted existing JPG file: {existing_jpg_path}")
+        if image_format == "jpg" or image_format == "jpeg":
+            
+            print("here in the jpg section")
 
             # Save as JPEG
             save_path = f"{base_save_path}.jpg"
@@ -293,26 +293,32 @@ def update_image(image_path, db_path, uploaded_image, field_name, db_table_attr)
 
         # Handle PNG images
         elif image_format == "png":
-            if os.path.exists(existing_png_path):
-                os.remove(existing_png_path)  # Remove the existing PNG if it exists
-                log(f"Deleted existing PNG file: {existing_png_path}")
-
-            if os.path.exists(existing_jpg_path):
-                os.remove(existing_jpg_path)  # Remove the existing JPG if it exists
-                log(f"Deleted existing JPG file: {existing_jpg_path}")
+            
+            print("Got here in PNG section")
+                
+            print(db_path, db_table_attr, field_name, f"{field_name}.png")
 
             # Save as PNG without compression
             save_path = f"{base_save_path}.png"
-            image.save(save_path, "PNG", optimize=True)
+            
+            if image.mode == "P" and "transparency" in image.info:
+                image = image.convert("RGBA")
+    
+            image.save(save_path, "PNG")
             log(f"Saved image {field_name} as PNG at {save_path}.")
+            
+            print('passed this')
 
             # Save the database with field_name and '.png'
-            database.update(db_path, db_table_attr, field_name, f"{field_name}.png", do_log=False)
+            database.update(db_path, db_table_attr, field_name, f"{field_name}.png", do_log=True)
 
         # Handle all other types of images
         else:
+            print("here in the else section")
+
             # For any other format, save it with its original format
             existing_path = f"{base_save_path}.{image_format}"
+            
             if os.path.exists(existing_path):
                 os.remove(existing_path)  # Remove the existing file with the same name and different format
                 log(f"Deleted existing file: {existing_path}")
@@ -332,18 +338,3 @@ def update_image(image_path, db_path, uploaded_image, field_name, db_table_attr)
 
     except Exception as e:
         log(f"Error saving image {field_name}: {e}")
-    
-def filter_string_from_language(names, language_code):
-
-        if language_code != "en":
-            if names.endswith(f'_{language_code}'):
-                suffix_len = len(language_code)
-                filtered = names[: -suffix_len - 1]
-                return filtered
-                
-        else:
-
-            if '_' not in names:
-                filtered = names
-        
-                return filtered

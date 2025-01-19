@@ -11,12 +11,15 @@ from admin_base.functions import traceback_error, SpinnerWithMessage
 import time
 from django.contrib.auth.models import User
 from admin_base.tbot.utils import translate_text_api
+from admin_base.tbot.utils import translation_logger
 import shutil
+import logging
+import datetime
 
 # Base directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOCALE_PATH = os.path.join(BASE_DIR, "locale")  # Adjust as needed
-
+translation_logger()
 class Command(BaseCommand):
     help = "Extracts translation strings, auto-translates, and compiles them."
 
@@ -35,17 +38,30 @@ class Command(BaseCommand):
         remove = bool(options["remove"])
         
         # Get language full name from code
-        for languages in settings.LANGUAGES:
+        for languages in settings.LANGUAGES: 
             code, language_name = languages
             if code == language:
                 language_name = language_name
                 break
         
         if remove:
-            admin_locale_path = os.path.join(settings.BASE_DIR, "admin_base", 'locale', language)
-            
-            if os.path.exists(admin_locale_path):
-                shutil.rmtree(admin_locale_path)  
+            BASE_DIR = os.getcwd()
+            for item in os.listdir(BASE_DIR):    
+                item_path = os.path.join(BASE_DIR, item)
+                
+                if os.path.isdir(item_path):  # Check if it's a folder
+                    
+                    folder_path = os.path.join(BASE_DIR, item)
+                    
+                    for folders in os.listdir(folder_path):
+                        if folders == 'locale': 
+                            locale_path = os.path.join(folder_path, 'locale')
+                
+                            for sub_item in os.listdir(locale_path):
+                                sub_item_path = os.path.join(locale_path, sub_item)
+                                
+                                if os.path.isdir(sub_item_path):  # Check if it's a folder
+                                    shutil.rmtree(sub_item_path)  # Remove the folder
                 
             self.apps_translating(language, remove=True)
             
@@ -56,10 +72,13 @@ class Command(BaseCommand):
         print('')   
         print(colored(f"Starting translation for {language_name} ({language})", "white", 'on_magenta', attrs=['bold']))
         print('')
+        
+        logging.info(f"Starting translation {language_name} ({language}) at {datetime.datetime.now()}")
 
         self.ensure_locale_path() #Insure "locale" folder exists
         if self.translation_present(language):
             print(f"Translation found for {language}")
+            logging.error(f"Translation found for {language}")
             
         else:
             while True:
@@ -79,13 +98,11 @@ class Command(BaseCommand):
                 break
             
         self.apps_translating(language)
-        
-        print('\n')
-        print(colored("Successfully translated website :)", 'white', 'on_light_green', attrs=['bold']))
-        
+
         e1 = time.time()
-        
-        print(f"Time taken for website transaltion is {round((e1-s1), 2)/60}")
+        print("")
+        print(colored(f"Successfully translated website in {round(((e1-s1)/60), 2)} minutes :)", 'white', 'on_light_green', attrs=['bold']))
+        logging.info(f"Successfully translated website in {round(((e1-s1)/60), 2)} minutes :)")
 
     def ensure_locale_path(self):
         """Ensure the locale directory exists."""
@@ -105,18 +122,29 @@ class Command(BaseCommand):
         """Extract translation strings for the specified language."""
         
         spinner.update("Extracting translations from templates... ")
-        time.sleep(2)
         try:
             subprocess.run(
                 ["python", "manage.py", "makemessages", "-l", language],
                 cwd=settings.BASE_DIR,
                 stdout=subprocess.DEVNULL, 
-                stderr=subprocess.DEVNULL
+                stderr=subprocess.DEVNULL,
+                check=True
             )
             
             # Mark translations for conditional toast
             locale_path = os.path.join(settings.BASE_DIR, "admin_base", 'locale', language, 'LC_MESSAGES', 'django.po')
 
+            timeout = 10  # Maximum wait time in seconds
+            interval = 0.5  # Check every 0.5 seconds
+
+            for _ in range(int(timeout / interval)):
+                if os.path.exists(locale_path):
+                    break
+                time.sleep(interval)
+            else:
+                logging.error(f"Locale file not found at {locale_path} after waiting {timeout} seconds.")
+                raise FileNotFoundError(f"Locale file not found at {locale_path} after waiting {timeout} seconds.")
+        
             # Get the admin user (superuser)
             admin_user = User.objects.filter(is_superuser=True).first()
             admin_name = admin_user.get_full_name() or admin_user.get_username()
@@ -127,8 +155,11 @@ class Command(BaseCommand):
 msgid "Welcome back, {admin_name.capitalize()}"
 msgstr \"\""""
                 po_file.write(f'\n{message}\n')
+                
+                logging.info("Succesfully extracted messages labeles for translation")
             
         except subprocess.CalledProcessError as e:
+            logging.error(f"Error extracting translations for '{language}': {e}, working dir at {settings.BASE_DIR}")
             spinner.stop(f"Error extracting translations for '{language}': {e}, working dir at {settings.BASE_DIR}", 'error')
             return False
 
@@ -136,6 +167,7 @@ msgstr \"\""""
         """Auto-translate the extracted .po file using Google Translate."""
         
         spinner.update(f"Auto-translating .po file...")
+        logging.info(f"Translating .po files in locale folders in {language} language...")
         
         BASE_DIR = os.getcwd()  # Your base directory
 
@@ -182,8 +214,10 @@ msgstr \"\""""
                 if line.startswith('msgid "'):
                     original_text = line[7:-2]  # Extract text inside quotes
                     if original_text:  # Skip empty strings
-                        
                         translation = translate_text_api(original_text, language)
+                        
+                        logging.info(f"String: \"{original_text}\", Translation: \"{translation}\"")
+                        
                         translated_lines.append(line)  # Keep msgid
                         # Check if the next line is 'msgstr ""' and remove it
                         if i + 1 < len(lines) and lines[i + 1] == 'msgstr ""\n':
@@ -209,9 +243,12 @@ msgstr \"\""""
                 ["python", "manage.py", "compilemessages"], 
                 cwd=settings.BASE_DIR,
                 stdout=subprocess.DEVNULL, 
-                stderr=subprocess.DEVNULL
+                stderr=subprocess.DEVNULL,
+                check=True
             )
+            logging.info("Succesfully complied messages")
         except subprocess.CalledProcessError as e:
+            logging.error(f"Error compiling messages: {e}")
             spinner.stop(f"Error compiling messages: {e}", "error")
             return False
             
@@ -259,11 +296,13 @@ msgstr \"\""""
             with open(html_path, "r", encoding="utf-8") as file:
                 html_content = file.read()
         except FileNotFoundError:
+            logging.error(f"Error: The HTML file was not found.")
             spinner.stop(f"Error: The HTML file was not found.", 'error')
             return False
 
         # Check if the language is already present in the HTML file
         if f"request.LANGUAGE_CODE == '{code}'" in html_content:
+            logging.error(f"Language '{code}' is already present in the HTML file.")
             spinner.stop(f"Language '{code}' is already present in the HTML file.", 'error')
             return False
 
@@ -297,8 +336,9 @@ msgstr \"\""""
         try:
             with open(html_path, "w", encoding="utf-8") as file:
                 file.write(html_content)
+                logging.info("Succesfully written the updated HTML content to include button for language selection.")
         except Exception as e:
-            print()
+            logging.error(f"Error writing to the HTML file: {e}")
             spinner.stop(f"Error writing to the HTML file: {e}", 'error')
             return False
             
@@ -338,13 +378,11 @@ msgstr \"\""""
                             else:
                             
                                 print(colored(f"\nRunning translate.py for app: {app_config.name}\n", "light_green", attrs=['bold']))
+                                logging.info(f"Running translate.py for app: {app_config.name}")
                                 translate_func(language)  # Call the function with the provided argument
                                 print(colored(f"\nEnding translate.py for app: {app_config.name}\n", "light_green", attrs=['bold']))
                         
                         else:
-                            self.stderr.write(
-                                
-                            )
                             print(colored(f"'translate_app' function not found or not callable in {app_config.name}.Translate", 'red'))
                             
                     except ModuleNotFoundError:
@@ -354,7 +392,7 @@ msgstr \"\""""
                         
                     except Exception as e:
                         print(colored(f"\nError while running translate.py in {app_config.name}:", "red"))
-                        traceback_error()
+                        traceback_error(detailed=True)
                         
                 else:
                     if not remove:

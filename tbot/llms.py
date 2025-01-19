@@ -4,7 +4,10 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 import transformers
 import torch
 import gc
-#model_name = "facebook/mbart-large-50"
+import ollama
+from ollama import chat
+from ollama import ChatResponse
+import time
 
 class tbot_gemma2:
     def __init__(self):
@@ -78,17 +81,13 @@ class tbot_gemma2:
     
 class tbot_aya23:
     def __init__(self):
+        self.model = "aya:8b"
         pass
     
     def generate_response(self, input_text):
-        import ollama
-        from ollama import chat
-        from ollama import ChatResponse
         
-        model = "aya:8b"
-        
-        ollama.pull(model)
-        response: ChatResponse = chat(model=model, messages=[
+        ollama.pull(self.model)
+        response: ChatResponse = chat(model=self.model, messages=[
         {
             'role': 'user',
             'content': input_text,
@@ -100,17 +99,13 @@ class tbot_aya23:
 
 class tbot_aya_expanse:
     def __init__(self):
+        self.model = "aya-expanse"
         pass
     
     def generate_response(self, input_text):
-        import ollama
-        from ollama import chat
-        from ollama import ChatResponse
-
-        model = "aya-expanse"
         
-        ollama.pull(model)
-        response: ChatResponse = chat(model=model, messages=[
+        ollama.pull(self.model)
+        response: ChatResponse = chat(model=self.model, messages=[
         {
             'role': 'user',
             'content': input_text,
@@ -121,17 +116,13 @@ class tbot_aya_expanse:
 
 class tbot_aya_expanse_32b:
     def __init__(self):
+        self.model = "aya-expanse:32b"
         pass
     
     def generate_response(self, input_text):
-        import ollama
-        from ollama import chat
-        from ollama import ChatResponse
-
-        model = 'aya-expanse:32b'
         
-        ollama.pull(model)
-        response: ChatResponse = chat(model=model, messages=[
+        ollama.pull(self.model)
+        response: ChatResponse = chat(model=self.model, messages=[
         {
             'role': 'user',
             'content': input_text,
@@ -150,74 +141,11 @@ class tbot_advanced(tbot_aya_expanse_32b):
     pass
 
 
-# Target Language: {language_code}
-# Text to translate: {text_no_functions}
-# Text context OR Position In Page: {context_description}
-# """
-
-
-# Content Promt
-# promt = f"""
-# You’re a skilled translator with expertise in Arabic and a deep understanding of web design terminology. 
-# You specialize in providing precise translations for website content to ensure 
-# clarity and cultural relevance. Your task is to translate the sentence/paragraph "{sentence}" into Arabic. 
-# Keep in mind that you may translate the phrase into more characters or words than it originally contains to better match the context. 
-# Output only the translated phrase in Arabic with no special characters or punctuation.
-# """
-
-
-# Sidebar Navigation Label
-# promt = """
-# You’re a skilled translator with expertise in Arabic and a deep understanding of web design terminology. 
-# You specialize in providing precise translations for navigation labels and other user interface elements to 
-# ensure clarity and cultural relevance. Your task is to translate the phrase "Contact page" into Arabic. 
-# This phrase is the navigation label for the backend sidebar. Keep in mind that you may translate the phrase into 
-# more characters or words than it originally contains to better match the context. 
-# Output only the translated phrase in Arabic with no special charecters or punctuation.
-# """
-
-
-# Input Field Title
-# prompt = f"""
-# You are a skilled translator with expertise in {language} and a deep understanding of web design and user interface terminology. 
-# Your task is to translate the phrase "{text_no_functions}" into {language}, ensuring that it works effectively as a field title (label) above an input box in a backend user interface.
-
-# Guidelines:
-# 1. The field title should clearly describe the input required from the user, making it intuitive and easy to understand for backend users.
-# 2. Avoid long, complicated phrases. Keep the translation clear and concise.
-# 3. Do not include any unnecessary characters, punctuation, or explanations.
-# 4. Ensure that the translation reflects the field's purpose, without altering the intent of the original text.
-# 5. Translate the text naturally into {language}, ensuring cultural appropriateness and clarity for backend users.
-
-# The output should only include the translated field title in {language} with no additional formatting or punctuation.
-# """
-
-
-
-# Accordition Title Backend
-# prompt = f"""
-# You are an experienced translator with expertise in {language} and a deep understanding of web design and user interface terminology. 
-# Your task is to translate the phrase "{text_no_functions}" into {language}, ensuring that it remains suitable for use as an accordion section title in a backend user interface. 
-
-# Guidelines:
-# 1. The accordion title should be concise, clear, and representative of the section it refers to, allowing users to easily understand what content is under that section when expanded.
-# 2. Do not include any unnecessary characters, punctuation, or explanations.
-# 3. Ensure the translation remains simple and direct, as it will appear as a clickable title in the backend UI.
-# 4. Translate the text naturally into {language} while keeping it culturally relevant and user-friendly for backend users.
-
-# The output should only include the translated accordion title in {language} with no additional formatting or punctuation.
-# """
-
-
-# import time
-
 # start1 = time.time()
-# bot = tbot_testing()
+# bot = tbot_advanced()
+# print(bot.model)
 # end1 = time.time()
 
-# avg_time = []
-
-# # for i in range(20):
 # text_no_functions = "Lorem Ipsumsss and this too"
 # language = "Arabic"
 
@@ -229,6 +157,7 @@ class tbot_advanced(tbot_aya_expanse_32b):
 # Keep in mind that you may translate the phrase into more characters or words than it originally contains to better match the context. 
 # Output only the translated phrase in Arabic with no special characters or punctuation.
 # """
+
 # start2 = time.time()
 # resp = bot.generate_response(promt)
 # print(f"Response: {resp}")
@@ -242,3 +171,74 @@ class tbot_advanced(tbot_aya_expanse_32b):
 
 # print(f"Model Initiation: {round(end1-start1, 2)}")
 # print(f"Response Generation: {round(end2-start2, 2)}")
+
+
+
+
+
+
+# Test function to calculate average response time
+# def test_models(models, prompt, iterations=20):
+#     results = {}
+#     for bot_class in models:
+#         bot = bot_class()  # Initialize the bot
+#         print(f"Testing {bot.model}...")
+        
+#         response_times = []
+#         for _ in range(iterations):
+#             start = time.time()
+#             bot.generate_response(prompt)  # Call the function
+#             end = time.time()
+#             response_times.append(end - start)
+        
+#         # Calculate average time for this model
+#         avg_time = sum(response_times) / iterations
+#         results[bot.model] = avg_time
+
+#         print(f"Average response time for {bot.model}: {round(avg_time, 4)} seconds\n")
+    
+#     return results
+
+# # Define the models and the prompt
+# models = [tbot, tbot_backup, tbot_advanced]
+
+# text_no_functions = "Lorem Ipsumsss and this too"
+# prompt = f"""
+# You’re a skilled translator with expertise in Arabic and a deep understanding of web design terminology. 
+# You specialize in providing precise translations for website content to ensure 
+# clarity and cultural relevance. Your task is to translate the sentence/paragraph "{text_no_functions}" into Arabic. 
+# Keep in mind that you may translate the phrase into more characters or words than it originally contains to better match the context. 
+# Output only the translated phrase in Arabic with no special characters or punctuation.
+# """
+
+# # Run the test and display results
+# results = test_models(models, prompt)
+
+# # Compare the models
+# print("Comparison of Models:")
+# for model, avg_time in results.items():
+#     print(f"{model}: {round(avg_time, 4)} seconds")
+
+# # Calculate "Times" metrics
+# sorted_results = sorted(results.items(), key=lambda x: x[1])  # Sort models by response time (ascending)
+# fastest_model = sorted_results[0][0]  # Fastest model's name
+# fastest_time = sorted_results[0][1]  # Fastest model's response time
+
+# times_metrics = []
+# for model, avg_time in sorted_results:
+#     times_metric = avg_time / fastest_time
+#     times_metrics.append((model, round(times_metric, 2)))
+
+# # Print "Times" metrics
+# print("\nTimes Metrics (relative to the fastest model):")
+# for model, times_metric in times_metrics:
+#     print(f"{model}: {times_metric}x slower than {fastest_model}")
+
+# # Example comparison output
+# print("\nDetailed Model Comparisons:")
+# for i in range(len(sorted_results)):
+#     for j in range(i + 1, len(sorted_results)):
+#         model1, time1 = sorted_results[i]
+#         model2, time2 = sorted_results[j]
+#         relative_speed = round(time2 / time1, 2)
+#         print(f"{model2} is {relative_speed}x slower than {model1}")

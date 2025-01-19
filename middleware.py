@@ -10,9 +10,6 @@ from django.http import StreamingHttpResponse
 from django.utils.cache import patch_cache_control
 from django.http import HttpResponseRedirect
 
-import logging
-
-logger = logging.getLogger(__name__)
 class CacheUpdateMiddleware(MiddlewareMixin):
     def __call__(self, request):
         # Only cache GET requests
@@ -131,7 +128,6 @@ class URLLanguageConfigMiddleware:
             # URL Language Changed
             else:    
                 if url_lang_match in dict(settings.LANGUAGES).keys():
-                    print("Here is working")
                     translation.activate(url_lang_match)
                     request.session['preferred_language'] = url_lang_match
 
@@ -145,26 +141,56 @@ class URLLanguageConfigMiddleware:
                 else:
                     return self.get_response(request)
 
+        # Handle default admin URLs (without language code)
+        # elif path.startswith("/admin/"):
+        #     if current_lang != settings.DEFAULT_LANGUAGE:
+        #         translation.activate(settings.DEFAULT_LANGUAGE)
+        #         request.session['preferred_language'] = settings.DEFAULT_LANGUAGE
+
+        #         response = self.get_response(request)
+                
+        #         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, settings.DEFAULT_LANGUAGE)
+        #         response.set_cookie('X-Reload', 'true')
+
+        #         return response
         
-        # Default Language Activated
-        else:
-            print("Default Activated")
-            print(current_lang)
-            print(settings.DEFAULT_LANGUAGE)
-            
+        elif path.startswith("/admin/"):
             if current_lang != settings.DEFAULT_LANGUAGE:
-                print("Changing")
+                # Ensure the default language is activated without disrupting the admin flow
                 translation.activate(settings.DEFAULT_LANGUAGE)
                 request.session['preferred_language'] = settings.DEFAULT_LANGUAGE
 
-                response = self.get_response(request)
-                
-                response.set_cookie(settings.LANGUAGE_COOKIE_NAME, settings.DEFAULT_LANGUAGE)
-                response.set_cookie('X-Reload', 'true')
+            return self.get_response(request)
 
-                return response
+        # Handle regular pages (non-admin URLs)
+        else:
+            # For regular pages, don't change the URL structure regardless of language
+            preferred_lang = request.session.get('preferred_language', settings.DEFAULT_LANGUAGE)
+
+            if current_lang != preferred_lang:
+                translation.activate(preferred_lang)
+
+            return self.get_response(request)
+        
+        # # Default Language Activated
+        # else:
+        #     print("Default Activated")
+        #     print(current_lang)
+        #     print(settings.DEFAULT_LANGUAGE)
+            
+        #     if current_lang != settings.DEFAULT_LANGUAGE:
+        #         print("Changing")
+        #         translation.activate(settings.DEFAULT_LANGUAGE)
+        #         request.session['preferred_language'] = settings.DEFAULT_LANGUAGE
+
+        #         response = self.get_response(request)
                 
-            else:   
-                return self.get_response(request)
+        #         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, settings.DEFAULT_LANGUAGE)
+        #         response.set_cookie('X-Reload', 'true')
+
+        #         return response
+                
+        #     else:   
+        #         return self.get_response(request)
 
 
