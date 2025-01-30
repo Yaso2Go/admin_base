@@ -155,21 +155,31 @@ class database():
             old_value = cursor.fetchall()
             old_value = old_value[0][0]
             
-            if type(new_value) == str:
-                query = f"""
-                UPDATE {table} 
-                SET {column} = '{new_value}' 
-                WHERE {column} IS '{old_value}'
-                """
+            # if type(new_value) == str:
+            #     query = f"""
+                
+            #     UPDATE {table} 
+            #     SET {column} = '{new_value}' 
+            #     WHERE {column} IS \"\"\"{old_value}\"\"\"
+                
+            #     """
                     
-            elif type(new_value) == int or type(new_value) == float:
-                query = f"""
-                UPDATE {table} 
-                SET {column} = {new_value} 
-                WHERE {column} = {old_value};
-                """
+            # elif type(new_value) == int or type(new_value) == float:
+            #     query = f"""
+            #     UPDATE {table} 
+            #     SET {column} = {new_value} 
+            #     WHERE {column} = {old_value};
+            #     """
+                
+            # print(query)
+            
+            query = f"""
+                UPDATE {table}
+                SET {column} = ?
+                WHERE {column} = ?
+            """
                     
-            cursor.execute(query)
+            cursor.execute(query, (new_value, old_value))
             db.commit()
             
             if do_log == True:
