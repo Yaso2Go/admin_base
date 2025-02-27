@@ -12,7 +12,7 @@
     {% load admin_custom_tags %}
     {% load i18n %}
 
-    <script src="{% static 'admin_base/js/cache.js' %}"></script>
+    <script src="{% static 'shared/js/cache.js' %}"></script>
 
     <!-- Favicon -->
     {% favicon_exist "static/admin_base/img/"|stringformat:"s"|add:"favicon.png" as favicon %}
@@ -206,7 +206,7 @@
             </div>
             
             <!-- Language selection button, syncronized with available languages -->
-            {% include "base/components/language_selection.html" %}
+            {% include "shared/language_selection.html" %}
             
         </div>
 
@@ -221,7 +221,7 @@
     {% include "base/components/mobile_view.html" %}
 
     <!-- DOM Scripts -->
-    <script src="{% static 'admin_base/js/cache.js' %}"></script>
+    <script src="{% static 'shared/js/cache.js' %}"></script>
     <script src="{% static 'admin_base/js/backend.js' %}"></script>  <!-- Common JavaScript -->
     
 

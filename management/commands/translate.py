@@ -1,6 +1,7 @@
 import os
 import subprocess
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 from django.conf import settings
 import json
 import importlib.util
@@ -15,11 +16,12 @@ from admin_base.tbot.utils import translation_logger
 import shutil
 import logging
 import datetime
+import io
 
-# Base directory of the project
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-LOCALE_PATH = os.path.join(BASE_DIR, "locale")  # Adjust as needed
+LOCALE_PATH = os.path.join(settings.BASE_DIR, "locale")  # Adjust as needed
+
 translation_logger()
+
 class Command(BaseCommand):
     help = "Extracts translation strings, auto-translates, and compiles them."
 
@@ -75,7 +77,7 @@ class Command(BaseCommand):
         
         logging.info(f"Starting translation {language_name} ({language}) at {datetime.datetime.now()}")
 
-        self.ensure_locale_path() #Insure "locale" folder exists
+        # self.ensure_locale_path() #Insure "locale" folder exists
         if self.translation_present(language):
             print(f"Translation found for {language}")
             logging.error(f"Translation found for {language}")
@@ -104,10 +106,28 @@ class Command(BaseCommand):
         print(colored(f"Successfully translated website in {round(((e1-s1)/60), 2)} minutes :)", 'white', 'on_light_green', attrs=['bold']))
         logging.info(f"Successfully translated website in {round(((e1-s1)/60), 2)} minutes :)")
 
-    def ensure_locale_path(self):
-        """Ensure the locale directory exists."""
-        if not os.path.exists(LOCALE_PATH):
-            os.makedirs(LOCALE_PATH)
+    def ensure_locale_path():
+        """Ensure every app in base_dir has a locale directory, excluding specified folders."""
+        print("\n\nRUNNING CHECKER\n\n")
+        
+        base_dir = settings.BASE_DIR
+        excluded_folders=['base', 'log', 'shared', 'cache']
+        
+        if excluded_folders is None:
+            excluded_folders = []  # Default to empty list if None is provided
+
+        for folder in os.listdir(base_dir):
+            folder_path = os.path.join(base_dir, folder)
+
+            # Check if it's a directory and not in the exclusion list
+            if os.path.isdir(folder_path) and folder not in excluded_folders:
+                locale_path = os.path.join(folder_path, "locale")
+
+                if not os.path.exists(locale_path):
+                    print(f"Creating locale folder in: {folder_path}")
+                    os.makedirs(locale_path)
+                else:
+                    print(f"Locale folder already exists in: {folder_path}")
 
     def translation_present(self, language):
         """Check if the specified language has already been translated."""
@@ -123,13 +143,18 @@ class Command(BaseCommand):
         
         spinner.update("Extracting translations from templates... ")
         try:
-            subprocess.run(
-                ["python", "manage.py", "makemessages", "-l", language],
-                cwd=settings.BASE_DIR,
-                stdout=subprocess.DEVNULL, 
-                stderr=subprocess.DEVNULL,
-                check=True
-            )
+            # try:
+            silent_output = io.StringIO()
+            call_command("makemessages", locale=str(language), stdout=silent_output, stderr=silent_output)
+                
+            # except:
+            #     subprocess.run(
+            #         ["python", "manage.py", "makemessages", "-l", language],
+            #         cwd=settings.BASE_DIR,
+            #         stdout=subprocess.DEVNULL, 
+            #         stderr=subprocess.DEVNULL,
+            #         check=True
+            #     )
             
             # Mark translations for conditional toast
             locale_path = os.path.join(settings.BASE_DIR, "admin_base", 'locale', language, 'LC_MESSAGES', 'django.po')

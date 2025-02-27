@@ -25,7 +25,7 @@ def cms_context_procces():
         return {'cms_files': cms_files}  # Return an empty list if 'cms' is not installed
 
     # Define the directory where the files are stored
-    cms_content_index_dir = os.path.join(settings.BASE_DIR, 'cms', 'content_index', get_language())
+    cms_content_index_dir = os.path.join(settings.CONTENT_INDEX_PATH, get_language())
 
     # Check if the directory exists
     if not os.path.exists(cms_content_index_dir):
